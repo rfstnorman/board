@@ -119,6 +119,7 @@ function card(o){
     if(dl<0) b.push('<span class="b b-crit">⚠️ date passed — check</span>');
     else if(dl<=7) b.push('<span class="b b-crit">⏳ '+(dl===0?"closes TODAY":dl===1?"1 day left":dl+" days left")+'</span>');
     else if(dl<=14) b.push('<span class="b b-ser">⏳ '+dl+' days left</span>');
+    else if(dl<=30) b.push('<span class="b b-warn">⏳ '+dl+' days left</span>');
     else b.push('<span class="b b-mut">📅 closes '+fmtD(o.deadline)+'</span>');
   } else if(o.deadline && o.status==="watch") b.push('<span class="b b-mut">👀 from ~'+fmtD(o.deadline)+'</span>');
   if(o.hot) b.push('<span class="b b-hot">🔥 big one</span>');
@@ -242,7 +243,7 @@ function renderList(){
   const used = new Set();
   const take = (p) => { const r = all.filter(o=>!used.has(o.id)&&p(o)); r.forEach(o=>used.add(o.id)); return r; };
   const knocked = take(o=>(o.status==="open"||o.status==="watch") && o.tom_vote==="down" && o.dad_vote==="down");
-  const closing = take(o=>o.status==="open" && o.deadline && daysLeft(o.deadline)<=14);
+  const closing = take(o=>o.status==="open" && o.deadline && daysLeft(o.deadline)<=30);
   const bothIn = take(o=>(o.status==="open"||o.status==="watch") && o.tom_vote==="up" && o.dad_vote==="up");
   const oneKeen = take(o=>(o.status==="open"||o.status==="watch") && ((o.tom_vote==="up")!==(o.dad_vote==="up")));
   const open = take(o=>o.status==="open");
