@@ -1,0 +1,225 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="robots" content="noindex">
+<title>Opportunities Board</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>">
+<style>
+:root{color-scheme:light;--page:#f9f9f7;--surf:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--mut:#898781;--hair:rgba(11,11,11,.10);
+--good:#0ca30c;--warn:#fab219;--ser:#ec835a;--crit:#d03b3b;--goodtxt:#006300}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--page:#0d0d0d;--surf:#1a1a19;--ink:#fff;--ink2:#c3c2b7;--mut:#898781;--hair:rgba(255,255,255,.10);--goodtxt:#0ca30c}}
+*{box-sizing:border-box;margin:0}
+body{background:var(--page);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding:14px 12px calc(30px + env(safe-area-inset-bottom))}
+header{padding:6px 2px 14px}h1{font-size:22px;display:flex;align-items:center;gap:10px}
+.rf{margin-left:auto;font-size:14px;background:var(--surf);border:1px solid var(--hair);border-radius:99px;padding:7px 14px;cursor:pointer;color:var(--ink)}
+.sub{color:var(--ink2);font-size:13px;margin-top:3px}
+.me{display:inline-block;margin-top:6px;font-size:13px;color:var(--ink2);border:1px solid var(--hair);border-radius:99px;padding:2px 10px;background:var(--surf)}
+details{margin:0 0 10px}
+summary{cursor:pointer;font-weight:700;font-size:15px;padding:10px 4px;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+summary::-webkit-details-marker{display:none}
+summary .n{font-weight:600;font-size:12px;color:var(--ink2);background:var(--surf);border:1px solid var(--hair);border-radius:99px;padding:1px 9px}
+.sec{display:flex;flex-direction:column;gap:8px;padding:2px 0 8px}
+.card{background:var(--surf);border:1px solid var(--hair);border-radius:14px;padding:12px 13px}
+.t{font-weight:700;font-size:15.5px}
+.s{color:var(--ink2);font-size:13px;margin-top:2px}
+.bs{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.b{font-size:12px;border-radius:99px;padding:2px 9px;border:1px solid var(--hair);color:var(--ink2);background:transparent}
+.b-crit{border-color:var(--crit);color:var(--crit);font-weight:700}
+.b-ser{border-color:var(--ser);color:var(--ser);font-weight:600}
+.b-warn{border-color:var(--warn);color:var(--ink2)}
+.b-good{border-color:var(--good);color:var(--goodtxt);font-weight:700}
+.b-hot{border-color:var(--ser);color:var(--ser);font-weight:700}
+.b-sub{border-color:var(--hair);color:var(--ink2)}
+.b-mut{color:var(--mut)}
+.na{margin-top:8px;font-size:13.5px}
+.dt{margin-top:4px;font-size:12.5px;color:var(--mut)}
+.row2{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;flex-wrap:wrap}
+.votes{display:flex;align-items:center;gap:7px}
+.vlab{font-size:13px;color:var(--ink2)}
+.vb{font-size:18px;line-height:1;background:var(--page);border:1.5px solid var(--hair);border-radius:12px;padding:9px 13px;min-width:48px;cursor:pointer}
+.vb.on-up{border-color:var(--good);background:#0ca30c22}
+.vb.on-down{border-color:var(--crit);background:#d03b3b22}
+.vother{font-size:13px;color:var(--ink2);margin-left:2px}
+.lnk{font-size:13.5px;color:var(--ink2);text-decoration:underline;padding:8px 2px}
+.gen{font-size:13.5px;background:var(--page);border:1.5px solid var(--hair);border-radius:12px;padding:9px 13px;cursor:pointer;color:var(--ink);font-weight:600}
+.gen.q{border-style:dashed;color:var(--ink2);font-weight:400;cursor:default}
+.drl{font-size:13.5px;font-weight:700;color:var(--goodtxt);text-decoration:underline;padding:8px 2px}
+.subm{margin-top:8px;border-top:1px solid var(--hair);padding-top:2px}
+.subm summary{font-size:13px;font-weight:600;color:var(--ink2);padding:8px 0}
+.subm textarea{width:100%;min-height:74px;border:1px solid var(--hair);border-radius:10px;background:var(--page);color:var(--ink);font:14px/1.4 system-ui,sans-serif;padding:9px}
+.subm input{width:100%;border:1px solid var(--hair);border-radius:10px;background:var(--page);color:var(--ink);font:14px system-ui,sans-serif;padding:9px;margin-top:6px}
+.subm button{margin-top:8px;font-size:14px;background:var(--ink);color:var(--page);border:0;border-radius:10px;padding:10px 16px;cursor:pointer}
+.cl{background:var(--surf);border:1px solid var(--hair);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--ink2)}
+.cl b{color:var(--ink)}
+.log{font-size:12.5px;color:var(--mut);padding:4px 2px}
+footer{margin-top:18px;color:var(--mut);font-size:12px;padding:0 2px}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--ink);color:var(--page);border-radius:99px;padding:8px 16px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.show{opacity:.92}
+.load{padding:40px 10px;color:var(--ink2);text-align:center}
+</style></head><body>
+<div id="app" class="load">Loading the board…</div>
+<div class="toast" id="toast">Saved</div>
+<script>
+const API = "https://fhocdheiukrrsmtyapdn.supabase.co/functions/v1/board";
+const K = new URLSearchParams(location.search).get("k");
+let D = null;
+
+const toast = (m) => { const t = document.getElementById("toast"); t.textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1600); };
+const esc = (s) => (s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;");
+const sydToday = () => new Intl.DateTimeFormat("en-CA",{timeZone:"Australia/Sydney"}).format(new Date());
+const daysLeft = (d) => d ? Math.round((Date.parse(d+"T00:00:00Z") - Date.parse(sydToday()+"T00:00:00Z"))/86400000) : null;
+const fmtD = (d) => { if(!d) return ""; const p=d.split("-"); return p[2]+"/"+p[1]+"/"+p[0].slice(2); };
+const chip = (v) => v==="up" ? "👍" : v==="down" ? "👎" : "—";
+
+async function post(body){
+  const r = await fetch(API+"?k="+K, {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify(body)});
+  if(!r.ok) throw new Error("save failed");
+  return r.json();
+}
+
+function card(o){
+  const me = D.me, other = me==="tom" ? "dad" : "tom";
+  const otherName = me==="tom" ? "Dad" : "Tom";
+  const dl = daysLeft(o.deadline);
+  const b = [];
+  if(o.status==="won") b.push('<span class="b b-good">🏆 WON</span>');
+  if(o.status==="submitted") b.push('<span class="b b-sub">📤 waiting to hear</span>');
+  if(o.deadline && o.status==="open"){
+    if(dl<0) b.push('<span class="b b-crit">⚠️ date passed — check</span>');
+    else if(dl<=7) b.push('<span class="b b-crit">⏳ '+(dl===0?"closes TODAY":dl===1?"1 day left":dl+" days left")+'</span>');
+    else if(dl<=14) b.push('<span class="b b-ser">⏳ '+dl+' days left</span>');
+    else b.push('<span class="b b-mut">📅 closes '+fmtD(o.deadline)+'</span>');
+  } else if(o.deadline && o.status==="watch") b.push('<span class="b b-mut">👀 from ~'+fmtD(o.deadline)+'</span>');
+  if(o.hot) b.push('<span class="b b-hot">🔥 big one</span>');
+  if(o.age_flag) b.push('<span class="b b-ser">⏰ before you’re 25</span>');
+  if(o.deadline_note && !o.verified) b.push('<span class="b b-warn">❓ '+esc(o.deadline_note)+'</span>');
+  else if(o.deadline_note) b.push('<span class="b b-mut">'+esc(o.deadline_note)+'</span>');
+  if(o.tom_vote==="up" && o.dad_vote==="up") b.push('<span class="b b-good">🤝 both in</span>');
+
+  const votable = o.status==="open" || o.status==="watch";
+  const myV = o[me+"_vote"], otherV = o[other+"_vote"];
+  const votes = votable ? '<div class="votes" data-id="'+esc(o.id)+'">'+
+    '<span class="vlab">You:</span>'+
+    '<button class="vb'+(myV==="up"?" on-up":"")+'" data-v="up" aria-label="good opportunity">👍</button>'+
+    '<button class="vb'+(myV==="down"?" on-down":"")+'" data-v="down" aria-label="knock back">👎</button>'+
+    '<span class="vother">'+otherName+': <b>'+chip(otherV)+'</b></span></div>' : "";
+
+  let gen = "";
+  if(votable){
+    if(o.draft_url) gen = '<a class="drl" href="'+esc(o.draft_url)+'" target="_blank" rel="noopener">📄 Draft ready ↗</a>';
+    else if(o.draft_requested) gen = '<span class="gen q">🪄 draft queued…</span>';
+    else gen = '<button class="gen" data-gen="'+esc(o.id)+'">🪄 Draft it</button>';
+  } else if(o.draft_url) gen = '<a class="drl" href="'+esc(o.draft_url)+'" target="_blank" rel="noopener">📄 Draft ↗</a>';
+
+  const subm = (o.status==="submitted" || o.status==="won" || o.status==="open") ?
+    '<details class="subm"><summary>📥 Log what was actually submitted (teaches the drafting engine)</summary>'+
+    '<textarea id="tx-'+esc(o.id)+'" placeholder="Paste the final answers/text you submitted…"></textarea>'+
+    '<input id="ur-'+esc(o.id)+'" placeholder="…or a link to the final doc (optional)">'+
+    '<button data-subm="'+esc(o.id)+'">Save final version</button></details>' : "";
+
+  return '<div class="card"><div class="t">'+esc(o.title)+'</div>'+
+    '<div class="s">'+esc(o.org)+(o.value?" · "+esc(o.value):"")+(o.who?' · <i>'+esc(o.who)+'</i>':"")+'</div>'+
+    '<div class="bs">'+b.join("")+'</div>'+
+    (o.next_action?'<div class="na">→ '+esc(o.next_action)+'</div>':"")+
+    (o.detail?'<div class="dt">'+esc(o.detail)+'</div>':"")+
+    '<div class="row2">'+votes+'<span style="display:flex;gap:10px;align-items:center">'+gen+(o.url?'<a class="lnk" href="'+esc(o.url)+'" target="_blank" rel="noopener">details ↗</a>':"")+'</span></div>'+subm+'</div>';
+}
+
+function closedLine(o){
+  return '<div class="cl"><b>'+esc(o.title)+'</b>'+(o.closed_on?' · '+fmtD(o.closed_on):"")+(o.closed_reason?' — '+esc(o.closed_reason):"")+'</div>';
+}
+
+function render(){
+  const all = [...D.opps].sort((a,b)=>{
+    if(a.deadline && b.deadline) return a.deadline < b.deadline ? -1 : 1;
+    if(a.deadline) return -1; if(b.deadline) return 1;
+    return a.title < b.title ? -1 : 1;
+  });
+  const used = new Set();
+  const take = (p) => { const r = all.filter(o=>!used.has(o.id)&&p(o)); r.forEach(o=>used.add(o.id)); return r; };
+  const knocked = take(o=>(o.status==="open"||o.status==="watch") && o.tom_vote==="down" && o.dad_vote==="down");
+  const closing = take(o=>o.status==="open" && o.deadline && daysLeft(o.deadline)<=14);
+  const bothIn = take(o=>(o.status==="open"||o.status==="watch") && o.tom_vote==="up" && o.dad_vote==="up");
+  const oneKeen = take(o=>(o.status==="open"||o.status==="watch") && ((o.tom_vote==="up")!==(o.dad_vote==="up")));
+  const open = take(o=>o.status==="open");
+  const watch = take(o=>o.status==="watch");
+  const submitted = take(o=>o.status==="submitted");
+  const won = take(o=>o.status==="won");
+  const closed = take(o=>o.status==="closed");
+  const ruled = take(o=>o.status==="ruled_out");
+  const sec = (t,items,op,cards=true) => !items.length ? "" :
+    '<details'+(op?" open":"")+'><summary>'+t+' <span class="n">'+items.length+'</span></summary><div class="sec">'+
+    items.map(o=>cards?card(o):closedLine(o)).join("")+'</div></details>';
+  const stamp = new Intl.DateTimeFormat("en-AU",{timeZone:"Australia/Sydney",day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date());
+
+  document.getElementById("app").className = "";
+  document.getElementById("app").innerHTML =
+    '<header><h1>🌾 Opportunities Board <button class="rf" id="rf">↻</button></h1>'+
+    '<div class="sub">Every grant &amp; award for Tom + Clean Green Ag · loaded '+stamp+' Sydney</div>'+
+    '<div class="me">Signed in as <b>&nbsp;'+esc(D.name)+'</b>&nbsp; · 👍 chase it · 👎 knock back · 🪄 = I draft it for you</div></header>'+
+    sec("🔴 Closing soon", closing, true)+
+    sec("🤝 You both want these", bothIn, true)+
+    sec("🗳 One of you is keen — talk about it", oneKeen, true)+
+    sec("🟢 Open now", open, true)+
+    sec("🕐 Opens later — watching", watch, false)+
+    sec("📤 Submitted — waiting to hear", submitted, false)+
+    sec("🏆 Wins", won, false)+
+    sec("👎 Knocked back by you both", knocked, false)+
+    sec("⚫ Closed &amp; gone", closed, false, false)+
+    sec("🚫 Ruled out (checked, not eligible/worth it)", ruled, false, false)+
+    '<details><summary>📝 Recent changes</summary><div class="sec">'+
+    (D.log||[]).map(l=>'<div class="log">'+new Intl.DateTimeFormat("en-AU",{timeZone:"Australia/Sydney",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(l.ts))+' — '+esc(l.entry)+'</div>').join("")+
+    '</div></details>'+
+    '<footer>Kept live by Tom’s Orchestrator — new finds land here, closed ones move down, 🪄 requests get drafted from the family profile + everything learned from past submissions.</footer>';
+  document.getElementById("rf").onclick = load;
+}
+
+document.addEventListener("click", async (e) => {
+  const vb = e.target.closest(".vb");
+  if(vb){
+    const wrap = vb.closest(".votes"), id = wrap.dataset.id;
+    const was = vb.classList.contains("on-up") || vb.classList.contains("on-down");
+    const vote = was ? "clear" : vb.dataset.v;
+    wrap.querySelectorAll(".vb").forEach(b=>b.classList.remove("on-up","on-down"));
+    if(!was) vb.classList.add(vb.dataset.v==="up"?"on-up":"on-down");
+    const o = D.opps.find(x=>x.id===id); if(o) o[D.me+"_vote"] = was ? null : vb.dataset.v;
+    try { await post({action:"vote", id, vote}); toast(vote==="clear"?"Vote cleared":vote==="up"?"Marked: chase it 👍":"Knocked back 👎"); }
+    catch { toast("Couldn’t save — try again"); }
+    return;
+  }
+  const gb = e.target.closest("[data-gen]");
+  if(gb){
+    const id = gb.dataset.gen;
+    gb.outerHTML = '<span class="gen q">🪄 draft queued…</span>';
+    const o = D.opps.find(x=>x.id===id); if(o){ o.draft_requested = true; }
+    try { await post({action:"generate", id}); toast("Queued — draft will appear right here 📄"); }
+    catch { toast("Couldn’t save — try again"); }
+    return;
+  }
+  const sb = e.target.closest("[data-subm]");
+  if(sb){
+    const id = sb.dataset.subm;
+    const text = (document.getElementById("tx-"+id)||{}).value || "";
+    const url = (document.getElementById("ur-"+id)||{}).value || "";
+    if(!text && !url){ toast("Paste the final text or a link first"); return; }
+    sb.disabled = true;
+    try { await post({action:"submission", id, text, url}); toast("Saved — the engine learns from this 📚"); sb.closest(".subm").removeAttribute("open"); }
+    catch { toast("Couldn’t save — try again"); sb.disabled = false; }
+    return;
+  }
+});
+
+async function load(){
+  if(!K){ document.getElementById("app").innerHTML = '<div class="load">Open your personal link (the one with ?k=…) — ask Tom’s Orchestrator if you’ve lost it.</div>'; return; }
+  try{
+    const r = await fetch(API+"?k="+K);
+    if(!r.ok) throw new Error(r.status);
+    D = await r.json();
+    render();
+  } catch(err){
+    document.getElementById("app").innerHTML = '<div class="load">Couldn’t load the board ('+esc(String(err.message||err))+'). Check reception and pull to refresh.</div>';
+  }
+}
+load();
+</script>
+</body></html>
