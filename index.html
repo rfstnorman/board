@@ -18,6 +18,9 @@ header{padding:6px 2px 14px}h1{font-size:22px;display:flex;align-items:center;ga
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .chip{font-size:13px;background:var(--surf);border:1px solid var(--hair);border-radius:99px;padding:8px 13px;min-height:34px;display:inline-flex;align-items:center;color:var(--ink2);cursor:pointer}
 .chip.on{background:var(--ink);color:var(--page);border-color:var(--ink);font-weight:600}
+.b-who{border:1.5px solid var(--ink2);color:var(--ink);font-weight:700}
+.ben{margin-top:9px;font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.35}
+.ben a{color:var(--ink2);font-weight:400;text-decoration:underline;white-space:nowrap;padding:2px 0}
 .shl{font-size:13px;background:transparent;border:1px dashed var(--hair);border-radius:99px;padding:8px 13px;min-height:34px;display:inline-flex;align-items:center;color:var(--ink2);cursor:pointer;margin-left:auto}
 details{margin:0 0 10px}
 summary{cursor:pointer;font-weight:700;font-size:15px;padding:10px 4px;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
@@ -75,6 +78,21 @@ const sydToday = () => new Intl.DateTimeFormat("en-CA",{timeZone:"Australia/Sydn
 const daysLeft = (d) => d ? Math.round((Date.parse(d+"T00:00:00Z") - Date.parse(sydToday()+"T00:00:00Z"))/86400000) : null;
 const fmtD = (d) => { if(!d) return ""; const p=d.split("-"); return p[2]+"/"+p[1]+"/"+p[0].slice(2); };
 const chip = (v) => v==="up" ? "👍" : v==="down" ? "👎" : "—";
+// who can actually put the application in — the raw `who` field is messy free text
+const whoLabel = (w) => {
+  const s = (w||"").toLowerCase();
+  if(!s) return "";
+  if(s.includes("tom") && s.includes("rfs")) return "🚒 Tom + the RFS";
+  if(s.includes("tom") && s.includes("cga")) return "🌱 Tom + Clean Green Ag";
+  if(s.includes("clean green ag")) return "🌱 Clean Green Ag applies";
+  if(s.includes("brigade") && s.includes("auspice")) return "🚒 Brigade — needs an auspice";
+  if(s.includes("brigade") && s.includes("school")) return "🚒 Brigade or the school";
+  if(s.includes("brigade")) return "🚒 The brigade applies";
+  if(s.includes("school")) return "🏫 The school applies";
+  if(s.includes("auspice")) return "🤝 Needs an auspice body";
+  if(s.includes("tom")) return "👤 Tom personally";
+  return w;
+};
 
 async function post(body){
   const r = await fetch(API+"?k="+K, {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify(body)});
@@ -87,6 +105,8 @@ function card(o){
   const otherName = me==="tom" ? "Dad" : "Tom";
   const dl = daysLeft(o.deadline);
   const b = [];
+  const wl = whoLabel(o.who);
+  if(wl) b.push('<span class="b b-who">'+esc(wl)+'</span>');
   if(o.status==="won") b.push('<span class="b b-good">🏆 WON</span>');
   if(o.status==="submitted") b.push('<span class="b b-sub">📤 waiting to hear</span>');
   if(o.deadline && o.status==="open"){
@@ -122,12 +142,18 @@ function card(o){
     '<input id="ur-'+esc(o.id)+'" placeholder="…or a link to the final doc (optional)">'+
     '<button data-subm="'+esc(o.id)+'">Save final version</button></details>' : "";
 
+  const link = o.url ? ' · <a href="'+esc(o.url)+'" target="_blank" rel="noopener">more info ↗</a>' : "";
+  // benefit answers "what do I actually get"; falls back to the raw value field if unset
+  const ben = o.benefit ? '<div class="ben">'+esc(o.benefit)+link+'</div>'
+            : (o.value ? '<div class="ben">'+esc(o.value)+link+'</div>'
+            : (link ? '<div class="ben">'+link.slice(3)+'</div>' : ""));
   return '<div class="card"><div class="t">'+esc(o.title)+'</div>'+
-    '<div class="s">'+esc(o.org)+(o.value?" · "+esc(o.value):"")+(o.who?' · <i>'+esc(o.who)+'</i>':"")+'</div>'+
+    '<div class="s">'+esc(o.org)+'</div>'+
     '<div class="bs">'+b.join("")+'</div>'+
+    ben+
     (o.next_action?'<div class="na">→ '+esc(o.next_action)+'</div>':"")+
     (o.detail?'<div class="dt">'+esc(o.detail)+'</div>':"")+
-    '<div class="row2">'+votes+'<span style="display:flex;gap:10px;align-items:center">'+gen+(o.url?'<a class="lnk" href="'+esc(o.url)+'" target="_blank" rel="noopener">details ↗</a>':"")+'</span></div>'+subm+'</div>';
+    '<div class="row2">'+votes+'<span style="display:flex;gap:10px;align-items:center">'+gen+'</span></div>'+subm+'</div>';
 }
 
 function closedLine(o){
@@ -190,7 +216,7 @@ function renderList(){
   const onChip = document.querySelector(".chip.on");
   const who = onChip ? onChip.dataset.who : "all";
   const filtering = !!q || who!=="all";
-  const fields = ["title","org","who","value","detail","next_action"];
+  const fields = ["title","org","who","value","benefit","detail","next_action"];
   const matchQ = (o) => !ql || fields.some(k=>String(o[k]||"").toLowerCase().includes(ql));
   const matchWho = (o) => {
     const w = (o.who||"").toLowerCase();
