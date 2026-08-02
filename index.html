@@ -19,6 +19,11 @@ header{padding:6px 2px 14px}h1{font-size:22px;display:flex;align-items:center;ga
 .chip{font-size:13px;background:var(--surf);border:1px solid var(--hair);border-radius:99px;padding:8px 13px;min-height:34px;display:inline-flex;align-items:center;color:var(--ink2);cursor:pointer}
 .chip.on{background:var(--ink);color:var(--page);border-color:var(--ink);font-weight:600}
 .b-who{border:1.5px solid var(--ink2);color:var(--ink);font-weight:700}
+.b-whi{border-color:var(--good);color:var(--goodtxt);font-weight:700}
+.b-wmid{border-color:var(--hair);color:var(--ink2);font-weight:600}
+.b-wlo{border-color:var(--hair);color:var(--mut)}
+.cmt{margin-top:7px;font-size:13.5px;color:var(--ink2);line-height:1.38}
+.wy{margin-top:5px;font-size:12.5px;color:var(--mut);line-height:1.38}
 .ben{margin-top:9px;font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.35}
 .ben a{color:var(--ink2);font-weight:400;text-decoration:underline;white-space:nowrap;padding:2px 0}
 .shl{font-size:13px;background:transparent;border:1px dashed var(--hair);border-radius:99px;padding:8px 13px;min-height:34px;display:inline-flex;align-items:center;color:var(--ink2);cursor:pointer;margin-left:auto}
@@ -107,6 +112,7 @@ function card(o){
   const b = [];
   const wl = whoLabel(o.who);
   if(wl) b.push('<span class="b b-who">'+esc(wl)+'</span>');
+  if(o.worth) b.push('<span class="b '+(o.worth>=8?"b-whi":o.worth>=5?"b-wmid":"b-wlo")+'">⚖ '+o.worth+'/10</span>');
   if(o.status==="won") b.push('<span class="b b-good">🏆 WON</span>');
   if(o.status==="submitted") b.push('<span class="b b-sub">📤 waiting to hear</span>');
   if(o.deadline && o.status==="open"){
@@ -151,6 +157,8 @@ function card(o){
     '<div class="s">'+esc(o.org)+'</div>'+
     '<div class="bs">'+b.join("")+'</div>'+
     ben+
+    (o.commitment?'<div class="cmt">📌 '+esc(o.commitment)+'</div>':"")+
+    (o.worth_why?'<div class="wy">⚖ '+esc(o.worth_why)+'</div>':"")+
     (o.next_action?'<div class="na">→ '+esc(o.next_action)+'</div>':"")+
     (o.detail?'<div class="dt">'+esc(o.detail)+'</div>':"")+
     '<div class="row2">'+votes+'<span style="display:flex;gap:10px;align-items:center">'+gen+'</span></div>'+subm+'</div>';
@@ -216,7 +224,7 @@ function renderList(){
   const onChip = document.querySelector(".chip.on");
   const who = onChip ? onChip.dataset.who : "all";
   const filtering = !!q || who!=="all";
-  const fields = ["title","org","who","value","benefit","detail","next_action"];
+  const fields = ["title","org","who","value","benefit","commitment","worth_why","detail","next_action"];
   const matchQ = (o) => !ql || fields.some(k=>String(o[k]||"").toLowerCase().includes(ql));
   const matchWho = (o) => {
     const w = (o.who||"").toLowerCase();
