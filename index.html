@@ -22,6 +22,8 @@ header{padding:6px 2px 14px}h1{font-size:22px;display:flex;align-items:center;ga
 .b-whi{border-color:var(--good);color:var(--goodtxt);font-weight:700}
 .b-wmid{border-color:var(--hair);color:var(--ink2);font-weight:600}
 .b-wlo{border-color:var(--hair);color:var(--mut)}
+.pass{font-size:12.5px;background:transparent;border:1px solid var(--hair);border-radius:99px;padding:7px 12px;color:var(--mut);cursor:pointer}
+.unpass{font-size:12px;background:transparent;border:1px solid var(--hair);border-radius:99px;padding:3px 10px;color:var(--ink2);cursor:pointer;margin-left:8px}
 .cmt{margin-top:7px;font-size:13.5px;color:var(--ink2);line-height:1.38}
 .wy{margin-top:5px;font-size:12.5px;color:var(--mut);line-height:1.38}
 .ben{margin-top:9px;font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.35}
@@ -162,17 +164,26 @@ function card(o){
     (o.worth_why?'<div class="wy">⚖ '+esc(o.worth_why)+'</div>':"")+
     (o.next_action?'<div class="na">→ '+esc(o.next_action)+'</div>':"")+
     (o.detail?'<div class="dt">'+esc(o.detail)+'</div>':"")+
-    '<div class="row2">'+votes+'<span style="display:flex;gap:10px;align-items:center">'+gen+'</span></div>'+subm+'</div>';
+    '<div class="row2">'+votes+'<span style="display:flex;gap:10px;align-items:center">'+gen+
+    (votable?'<button class="pass" data-pass="'+esc(o.id)+'">⏭ give it a miss</button>':"")+
+    '</span></div>'+subm+'</div>';
 }
 
 function closedLine(o){
   return '<div class="cl"><b>'+esc(o.title)+'</b>'+(o.closed_on?' · '+fmtD(o.closed_on):"")+(o.closed_reason?' — '+esc(o.closed_reason):"")+'</div>';
 }
 
+// nothing is ever deleted — passed rows keep their status, votes and history
+function missedLine(o){
+  return '<div class="cl"><b>'+esc(o.title)+'</b>'+(o.passed_by?' · '+esc(o.passed_by)+' gave it a miss':"")+
+    '<button class="unpass" data-unpass="'+esc(o.id)+'">bring it back</button></div>';
+}
+
 function sec(t,items,op,cards=true){
+  const render1 = (o)=> cards===true ? card(o) : cards==="missed" ? missedLine(o) : closedLine(o);
   return !items.length ? "" :
     '<details'+(op?" open":"")+'><summary>'+t+' <span class="n">'+items.length+'</span></summary><div class="sec">'+
-    items.map(o=>cards?card(o):closedLine(o)).join("")+'</div></details>';
+    items.map(render1).join("")+'</div></details>';
 }
 
 function render(){
@@ -242,6 +253,7 @@ function renderList(){
   });
   const used = new Set();
   const take = (p) => { const r = all.filter(o=>!used.has(o.id)&&p(o)); r.forEach(o=>used.add(o.id)); return r; };
+  const missed = take(o=>o.passed);
   const knocked = take(o=>(o.status==="open"||o.status==="watch") && o.tom_vote==="down" && o.dad_vote==="down");
   const closing = take(o=>o.status==="open" && o.deadline && daysLeft(o.deadline)<=30);
   const bothIn = take(o=>(o.status==="open"||o.status==="watch") && o.tom_vote==="up" && o.dad_vote==="up");
@@ -267,6 +279,7 @@ function renderList(){
       sec("📤 Submitted — waiting to hear", submitted, filtering)+
       sec("🏆 Wins", won, filtering)+
       sec("👎 Knocked back by you both", knocked, filtering)+
+      sec("⏭️ Giving these a miss", missed, filtering, "missed")+
       sec("⚫ Closed &amp; gone", closed, filtering, false)+
       sec("🚫 Ruled out (checked, not eligible/worth it)", ruled, filtering, false);
   }
@@ -313,6 +326,15 @@ document.addEventListener("click", async (e) => {
     const o = D.opps.find(x=>x.id===id); if(o) o[D.me+"_vote"] = was ? null : vb.dataset.v;
     try { await post({action:"vote", id, vote}); toast(vote==="clear"?"Vote cleared":vote==="up"?"Marked: chase it 👍":"Knocked back 👎"); }
     catch { toast("Couldn’t save — try again"); }
+    return;
+  }
+  const pb = e.target.closest("[data-pass],[data-unpass]");
+  if(pb){
+    const on = pb.hasAttribute("data-pass");
+    const id = on ? pb.dataset.pass : pb.dataset.unpass;
+    pb.disabled = true;
+    try { await post({action:"pass", id, on}); toast(on?"Moved to the giving-it-a-miss pile":"Brought back"); await load(); }
+    catch { toast("Couldn’t save — try again"); pb.disabled = false; }
     return;
   }
   const gb = e.target.closest("[data-gen]");
