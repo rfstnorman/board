@@ -14,6 +14,11 @@ header{padding:6px 2px 14px}h1{font-size:22px;display:flex;align-items:center;ga
 .rf{margin-left:auto;font-size:14px;background:var(--surf);border:1px solid var(--hair);border-radius:99px;padding:7px 14px;cursor:pointer;color:var(--ink)}
 .sub{color:var(--ink2);font-size:13px;margin-top:3px}
 .me{display:inline-block;margin-top:6px;font-size:13px;color:var(--ink2);border:1px solid var(--hair);border-radius:99px;padding:2px 10px;background:var(--surf)}
+#q{width:100%;font-size:14px;background:var(--surf);border:1px solid var(--hair);border-radius:10px;padding:9px 12px;color:var(--ink);margin-top:8px;-webkit-appearance:none;appearance:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:13px;background:var(--surf);border:1px solid var(--hair);border-radius:99px;padding:8px 13px;min-height:34px;display:inline-flex;align-items:center;color:var(--ink2);cursor:pointer}
+.chip.on{background:var(--ink);color:var(--page);border-color:var(--ink);font-weight:600}
+.shl{font-size:13px;background:transparent;border:1px dashed var(--hair);border-radius:99px;padding:8px 13px;min-height:34px;display:inline-flex;align-items:center;color:var(--ink2);cursor:pointer;margin-left:auto}
 details{margin:0 0 10px}
 summary{cursor:pointer;font-weight:700;font-size:15px;padding:10px 4px;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
 summary::-webkit-details-marker{display:none}
@@ -35,14 +40,14 @@ summary .n{font-weight:600;font-size:12px;color:var(--ink2);background:var(--sur
 .dt{margin-top:4px;font-size:12.5px;color:var(--mut)}
 .row2{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;flex-wrap:wrap}
 .votes{display:flex;align-items:center;gap:7px}
-.vlab{font-size:13px;color:var(--ink2)}
+.vlab{font-size:13px;color:var(--ink2);}
 .vb{font-size:18px;line-height:1;background:var(--page);border:1.5px solid var(--hair);border-radius:12px;padding:9px 13px;min-width:48px;cursor:pointer}
 .vb.on-up{border-color:var(--good);background:#0ca30c22}
 .vb.on-down{border-color:var(--crit);background:#d03b3b22}
 .vother{font-size:13px;color:var(--ink2);margin-left:2px}
 .lnk{font-size:13.5px;color:var(--ink2);text-decoration:underline;padding:8px 2px}
 .gen{font-size:13.5px;background:var(--page);border:1.5px solid var(--hair);border-radius:12px;padding:9px 13px;cursor:pointer;color:var(--ink);font-weight:600}
-.gen.q{border-style:dashed;color:var(--ink2);font-weight:400;cursor:default}
+.gen.{border-style:dashed;color:var(--ink2);font-weight:400;cursor:default}
 .drl{font-size:13.5px;font-weight:700;color:var(--goodtxt);text-decoration:underline;padding:8px 2px}
 .subm{margin-top:8px;border-top:1px solid var(--hair);padding-top:2px}
 .subm summary{font-size:13px;font-weight:600;color:var(--ink2);padding:8px 0}
@@ -129,8 +134,73 @@ function closedLine(o){
   return '<div class="cl"><b>'+esc(o.title)+'</b>'+(o.closed_on?' · '+fmtD(o.closed_on):"")+(o.closed_reason?' — '+esc(o.closed_reason):"")+'</div>';
 }
 
+function sec(t,items,op,cards=true){
+  return !items.length ? "" :
+    '<details'+(op?" open":"")+'><summary>'+t+' <span class="n">'+items.length+'</span></summary><div class="sec">'+
+    items.map(o=>cards?card(o):closedLine(o)).join("")+'</div></details>';
+}
+
 function render(){
-  const all = [...D.opps].sort((a,b)=>{
+  const stamp = new Intl.DateTimeFormat("en-AU",{timeZone:"Australia/Sydney",day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date());
+  const shareBtn = (D.share && D.share.url) ? '<button class="shl" id="shl">🔗 '+esc(D.share.name)+'’s link</button>' : "";
+
+  document.getElementById("app").className = "";
+  document.getElementById("app").innerHTML =
+    '<header><h1>🌾 Opportunities Board <button class="rf" id="rf">↻</button></h1>'+
+    '<div class="sub">Every grant &amp; award for Tom + Clean Green Ag · loaded '+stamp+' Sydney</div>'+
+    '<div class="me">Signed in as <b>&nbsp;'+esc(D.name)+'</b>&nbsp; · 👍 chase it · 👎 knock back · 🪄 = I draft it for you</div>'+
+    '<input id="q" type="search" placeholder="Search opportunities…" autocomplete="off" autocapitalize="none" spellcheck="false">'+
+    '<div class="chips" id="chips">'+
+    '<button class="chip on" data-who="all">Everything</button>'+
+    '<button class="chip" data-who="tom">Tom</button>'+
+    '<button class="chip" data-who="cga">Clean Green Ag</button>'+
+    '<button class="chip" data-who="bs">Brigade &amp; school</button>'+
+    shareBtn+
+    '</div>'+
+    '</header>'+
+    '<div id="results"></div>';
+
+  document.getElementById("rf").onclick = load;
+  document.getElementById("q").oninput = renderList;
+  document.getElementById("chips").onclick = (e) => {
+    const c = e.target.closest(".chip");
+    if(!c) return;
+    const was = c.classList.contains("on");
+    document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));
+    (was ? document.querySelector('.chip[data-who="all"]') : c).classList.add("on");
+    renderList();
+  };
+  document.getElementById("results").onclick = (e) => {
+    if(e.target.closest("#clr")){
+      e.preventDefault();
+      document.getElementById("q").value = "";
+      document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));
+      document.querySelector('.chip[data-who="all"]').classList.add("on");
+      renderList();
+    }
+  };
+  if(document.getElementById("shl")) document.getElementById("shl").onclick = copyDadLink;
+
+  renderList();
+}
+
+function renderList(){
+  const q = (document.getElementById("q").value || "").trim();
+  const ql = q.toLowerCase();
+  const onChip = document.querySelector(".chip.on");
+  const who = onChip ? onChip.dataset.who : "all";
+  const filtering = !!q || who!=="all";
+  const fields = ["title","org","who","value","detail","next_action"];
+  const matchQ = (o) => !ql || fields.some(k=>String(o[k]||"").toLowerCase().includes(ql));
+  const matchWho = (o) => {
+    const w = (o.who||"").toLowerCase();
+    if(who==="tom") return w.includes("tom");
+    if(who==="cga") return w.includes("clean green ag") || w.includes("cga");
+    if(who==="bs") return w.includes("brigade") || w.includes("school") || w.includes("auspice");
+    return true;
+  };
+
+  const all = D.opps.filter(o=>matchQ(o) && matchWho(o)).sort((a,b)=>{
     if(a.deadline && b.deadline) return a.deadline < b.deadline ? -1 : 1;
     if(a.deadline) return -1; if(b.deadline) return 1;
     return a.title < b.title ? -1 : 1;
@@ -147,31 +217,54 @@ function render(){
   const won = take(o=>o.status==="won");
   const closed = take(o=>o.status==="closed");
   const ruled = take(o=>o.status==="ruled_out");
-  const sec = (t,items,op,cards=true) => !items.length ? "" :
-    '<details'+(op?" open":"")+'><summary>'+t+' <span class="n">'+items.length+'</span></summary><div class="sec">'+
-    items.map(o=>cards?card(o):closedLine(o)).join("")+'</div></details>';
-  const stamp = new Intl.DateTimeFormat("en-AU",{timeZone:"Australia/Sydney",day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date());
 
-  document.getElementById("app").className = "";
-  document.getElementById("app").innerHTML =
-    '<header><h1>🌾 Opportunities Board <button class="rf" id="rf">↻</button></h1>'+
-    '<div class="sub">Every grant &amp; award for Tom + Clean Green Ag · loaded '+stamp+' Sydney</div>'+
-    '<div class="me">Signed in as <b>&nbsp;'+esc(D.name)+'</b>&nbsp; · 👍 chase it · 👎 knock back · 🪄 = I draft it for you</div></header>'+
-    sec("🔴 Closing soon", closing, true)+
-    sec("🤝 You both want these", bothIn, true)+
-    sec("🗳 One of you is keen — talk about it", oneKeen, true)+
-    sec("🟢 Open now", open, true)+
-    sec("🕐 Opens later — watching", watch, false)+
-    sec("📤 Submitted — waiting to hear", submitted, false)+
-    sec("🏆 Wins", won, false)+
-    sec("👎 Knocked back by you both", knocked, false)+
-    sec("⚫ Closed &amp; gone", closed, false, false)+
-    sec("🚫 Ruled out (checked, not eligible/worth it)", ruled, false, false)+
-    '<details><summary>📝 Recent changes</summary><div class="sec">'+
+  let out = "";
+  if(filtering) out += '<div class="cl">Showing '+all.length+' of '+D.opps.length+' · <a href="#" id="clr" class="lnk">Clear</a></div>';
+
+  if(filtering && !all.length){
+    out += '<div class="load">'+(q ? 'Nothing matches “'+esc(q)+'” — try a shorter word.' : 'Nothing on the board for that group yet — tap Everything to see the rest.')+'</div>';
+  } else {
+    out += sec("🔴 Closing soon", closing, true)+
+      sec("🤝 You both want these", bothIn, true)+
+      sec("🗳 One of you is keen — talk about it", oneKeen, true)+
+      sec("🟢 Open now", open, true)+
+      sec("🕐 Opens later — watching", watch, filtering)+
+      sec("📤 Submitted — waiting to hear", submitted, filtering)+
+      sec("🏆 Wins", won, filtering)+
+      sec("👎 Knocked back by you both", knocked, filtering)+
+      sec("⚫ Closed &amp; gone", closed, filtering, false)+
+      sec("🚫 Ruled out (checked, not eligible/worth it)", ruled, filtering, false);
+  }
+
+  out += '<details><summary>📝 Recent changes</summary><div class="sec">'+
     (D.log||[]).map(l=>'<div class="log">'+new Intl.DateTimeFormat("en-AU",{timeZone:"Australia/Sydney",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(new Date(l.ts))+' — '+esc(l.entry)+'</div>').join("")+
     '</div></details>'+
     '<footer>Kept live by Tom’s Orchestrator — new finds land here, closed ones move down, 🪄 requests get drafted from the family profile + everything learned from past submissions.</footer>';
-  document.getElementById("rf").onclick = load;
+
+  document.getElementById("results").innerHTML = out;
+}
+
+async function copyDadLink(){
+  const url = D.share && D.share.url;
+  if(!url) return;
+  try{
+    await navigator.clipboard.writeText(url);
+    toast("Dad’s link copied");
+  } catch {
+    try{
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      toast("Dad’s link copied");
+    } catch {
+      toast("Couldn’t copy — long-press the link instead");
+    }
+  }
 }
 
 document.addEventListener("click", async (e) => {
