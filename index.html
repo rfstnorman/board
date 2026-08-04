@@ -22,6 +22,8 @@ header{padding:6px 2px 14px}h1{font-size:22px;display:flex;align-items:center;ga
 .b-whi{border-color:var(--good);color:var(--goodtxt);font-weight:700}
 .b-wmid{border-color:var(--hair);color:var(--ink2);font-weight:600}
 .b-wlo{border-color:var(--hair);color:var(--mut)}
+.qbox summary{color:var(--ser);font-weight:700}
+.qq{font-size:13.5px;color:var(--ink);margin:7px 0 2px;line-height:1.4}
 .pass{font-size:12.5px;background:transparent;border:1px solid var(--hair);border-radius:99px;padding:7px 12px;color:var(--mut);cursor:pointer}
 .unpass{font-size:12px;background:transparent;border:1px solid var(--hair);border-radius:99px;padding:3px 10px;color:var(--ink2);cursor:pointer;margin-left:8px}
 .cmt{margin-top:7px;font-size:13.5px;color:var(--ink2);line-height:1.38}
@@ -138,12 +140,23 @@ function card(o){
     '<button class="vb'+(myV==="down"?" on-down":"")+'" data-v="down" aria-label="knock back">👎</button>'+
     '<span class="vother">'+otherName+': <b>'+chip(otherV)+'</b></span></div>' : "";
 
+  // nothing is ever drafted blind — 🪄 queues questions first
+  const ds = o.draft_status || "";
   let gen = "";
   if(votable){
     if(o.draft_url) gen = '<a class="drl" href="'+esc(o.draft_url)+'" target="_blank" rel="noopener">📄 Draft ready ↗</a>';
-    else if(o.draft_requested) gen = '<span class="gen q">🪄 draft queued…</span>';
+    else if(ds==="questions") gen = '<span class="gen q">❓ questions below</span>';
+    else if(ds==="answered") gen = '<span class="gen q">✅ answers in — pack coming</span>';
+    else if(o.draft_requested) gen = '<span class="gen q">🪄 queued — questions coming</span>';
     else gen = '<button class="gen" data-gen="'+esc(o.id)+'">🪄 Draft it</button>';
   } else if(o.draft_url) gen = '<a class="drl" href="'+esc(o.draft_url)+'" target="_blank" rel="noopener">📄 Draft ↗</a>';
+
+  const qlist = Array.isArray(o.draft_questions) ? o.draft_questions : [];
+  const qs = (ds==="questions" && qlist.length) ?
+    '<details class="subm qbox" open><summary>❓ '+qlist.length+' questions before I draft this</summary>'+
+    qlist.map((q,i)=>'<div class="qq">'+(i+1)+'. '+esc(String(q))+'</div>').join("")+
+    '<textarea id="qa-'+esc(o.id)+'" placeholder="Answer what you can — number them, rough notes are fine. Anything you skip I will flag rather than invent."></textarea>'+
+    '<button data-ans="'+esc(o.id)+'">Send answers</button></details>' : "";
 
   const subm = (o.status==="submitted" || o.status==="won" || o.status==="open") ?
     '<details class="subm"><summary>📥 Log what was actually submitted (teaches the drafting engine)</summary>'+
@@ -162,6 +175,7 @@ function card(o){
     ben+
     (o.commitment?'<div class="cmt">📌 '+esc(o.commitment)+'</div>':"")+
     (o.worth_why?'<div class="wy">⚖ '+esc(o.worth_why)+'</div>':"")+
+    qs+
     (o.next_action?'<div class="na">→ '+esc(o.next_action)+'</div>':"")+
     (o.detail?'<div class="dt">'+esc(o.detail)+'</div>':"")+
     '<div class="row2">'+votes+'<span style="display:flex;gap:10px;align-items:center">'+gen+
@@ -340,10 +354,20 @@ document.addEventListener("click", async (e) => {
   const gb = e.target.closest("[data-gen]");
   if(gb){
     const id = gb.dataset.gen;
-    gb.outerHTML = '<span class="gen q">🪄 draft queued…</span>';
+    gb.outerHTML = '<span class="gen q">🪄 queued — questions coming</span>';
     const o = D.opps.find(x=>x.id===id); if(o){ o.draft_requested = true; }
-    try { await post({action:"generate", id}); toast("Queued — draft will appear right here 📄"); }
+    try { await post({action:"generate", id}); toast("Queued — I'll come back with questions first ❓"); }
     catch { toast("Couldn’t save — try again"); }
+    return;
+  }
+  const ab = e.target.closest("[data-ans]");
+  if(ab){
+    const id = ab.dataset.ans;
+    const text = (document.getElementById("qa-"+id)||{}).value || "";
+    if(!text.trim()){ toast("Type your answers first"); return; }
+    ab.disabled = true;
+    try { await post({action:"answers", id, text}); toast("Got them — drafting from these ✍️"); await load(); }
+    catch { toast("Couldn’t save — try again"); ab.disabled = false; }
     return;
   }
   const sb = e.target.closest("[data-subm]");
